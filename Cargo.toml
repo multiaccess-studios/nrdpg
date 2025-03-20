@@ -1,0 +1,10 @@
+[package]
+name = "nrdpg"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.5.32", features = ["derive"] }
+serde = "1"
+serde_json = "1"
+rand = "0.9.0"
