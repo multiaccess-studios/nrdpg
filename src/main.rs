@@ -154,16 +154,16 @@ fn main() {
         let mut exclude = BTreeSet::new();
         let mut type_count = BTreeMap::<_, i32>::new();
         let constraints = [
+            (Side::Runner, Rarity::Rare, None),
+            (Side::Runner, Rarity::Uncommon, Some(Faction::Anarch)),
+            (Side::Runner, Rarity::Uncommon, Some(Faction::Criminal)),
+            (Side::Runner, Rarity::Uncommon, Some(Faction::Shaper)),
             (Side::Runner, Rarity::Common, Some(Faction::Anarch)),
             (Side::Runner, Rarity::Common, Some(Faction::Criminal)),
             (Side::Runner, Rarity::Common, Some(Faction::Shaper)),
             (Side::Runner, Rarity::Common, None),
             (Side::Runner, Rarity::Common, None),
             (Side::Runner, Rarity::Common, None),
-            (Side::Runner, Rarity::Uncommon, Some(Faction::Anarch)),
-            (Side::Runner, Rarity::Uncommon, Some(Faction::Criminal)),
-            (Side::Runner, Rarity::Uncommon, Some(Faction::Shaper)),
-            (Side::Runner, Rarity::Rare, None),
         ];
         for (side, rarity, faction) in constraints {
             add_guarded(
@@ -229,16 +229,16 @@ fn main() {
         uncommon_faction_list.shuffle(&mut rng);
 
         let constraints = [
+            (Side::Corp, Rarity::Rare, None),
             (Side::Corp, Rarity::Agenda, Some(agenda_faction_list[0])),
             (Side::Corp, Rarity::Agenda, Some(agenda_faction_list[1])),
+            (Side::Corp, Rarity::Uncommon, Some(agenda_faction_list[0])),
+            (Side::Corp, Rarity::Uncommon, Some(agenda_faction_list[1])),
             (Side::Corp, Rarity::Common, Some(Faction::HaasBioroid)),
             (Side::Corp, Rarity::Common, Some(Faction::WeylandConsortium)),
             (Side::Corp, Rarity::Common, Some(Faction::Jinteki)),
             (Side::Corp, Rarity::Common, Some(Faction::NBN)),
             (Side::Corp, Rarity::Common, None),
-            (Side::Corp, Rarity::Uncommon, Some(agenda_faction_list[0])),
-            (Side::Corp, Rarity::Uncommon, Some(agenda_faction_list[1])),
-            (Side::Corp, Rarity::Rare, None),
         ];
 
         for (side, rarity, faction) in constraints {
@@ -310,11 +310,17 @@ fn add_guarded(
         let faction_cards = faction_cache.get(&faction).unwrap();
         pool = pool.intersection(faction_cards).copied().collect();
     }
-    let chosen = pool
+    let Some(chosen) = pool
         .into_iter()
         .filter(|f| !exclude.contains(f))
         .choose(rng)
-        .unwrap();
+    else {
+        for card in pack.iter() {
+            println!("{}", cards[*card].name);
+            println!("Could not select {:?}{:?}{:?}", side, rarity, faction);
+        }
+        panic!();
+    };
     exclude.insert(chosen);
     pack.insert(chosen);
     let chosen_card = &cards[chosen];
